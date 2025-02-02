@@ -42,7 +42,7 @@ class _DashboardPageState extends State<DashboardPage> {
             UserListPage(users: users, favoriteUsers: favouriteusers,),
           ),
           _buildDashboardCard(context, 'Favourites', Icons.favorite, FavouritesPage(favoriteUsers: favouriteusers,)),
-          _buildDashboardCard(context, 'About Us', Icons.info, AboutUsPage()),
+          _buildDashboardCard(context, 'About Us', Icons.info, AboutUsScreen()),
         ],
       ),
     );
