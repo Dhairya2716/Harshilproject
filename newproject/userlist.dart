@@ -13,6 +13,8 @@ class UserListPage extends StatefulWidget {
 }
 
 class _UserListPageState extends State<UserListPage> {
+  String _searchQuery = "";
+
   void _editUser(int index) async {
     final updatedUser = await Navigator.push(
       context,
@@ -73,24 +75,52 @@ class _UserListPageState extends State<UserListPage> {
 
   @override
   Widget build(BuildContext context) {
+    List<Map<String, dynamic>> filteredUsers = widget.users
+        .where((user) => user['name'].toLowerCase().contains(_searchQuery.toLowerCase()) ||
+        user['email'].toLowerCase().contains(_searchQuery.toLowerCase()))
+        .toList();
+
     return Scaffold(
       appBar: AppBar(
         title: Text('User List'),
         backgroundColor: Colors.blue,
         elevation: 4,
       ),
-      body: widget.users.isEmpty
-          ? Center(
-        child: Text(
-          "No users added yet",
-          style: TextStyle(fontSize: 18, color: Colors.grey),
-        ),
-      )
-          : ListView.builder(
-        itemCount: widget.users.length,
-        itemBuilder: (context, index) {
-          return _buildUserCard(index);
-        },
+      body: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: "Search users...",
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
+            ),
+          ),
+          Expanded(
+            child: filteredUsers.isEmpty
+                ? Center(
+              child: Text(
+                "No users found",
+                style: TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+            )
+                : ListView.builder(
+              itemCount: filteredUsers.length,
+              itemBuilder: (context, index) {
+                return _buildUserCard(filteredUsers[index]);
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.favorite, color: Colors.white),
@@ -107,7 +137,7 @@ class _UserListPageState extends State<UserListPage> {
     );
   }
 
-  Widget _buildUserCard(int index) {
+  Widget _buildUserCard(Map<String, dynamic> user) {
     return Card(
       margin: EdgeInsets.all(10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -116,16 +146,16 @@ class _UserListPageState extends State<UserListPage> {
         leading: CircleAvatar(
           backgroundColor: Colors.blue,
           child: Text(
-            widget.users[index]['name'][0],
+            user['name'][0],
             style: TextStyle(color: Colors.white),
           ),
         ),
         title: Text(
-          widget.users[index]['name'] ?? "",
+          user['name'] ?? "",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
         subtitle: Text(
-          widget.users[index]['email'] ?? "",
+          user['email'] ?? "",
           style: TextStyle(color: Colors.grey[600]),
         ),
         trailing: Row(
@@ -133,18 +163,18 @@ class _UserListPageState extends State<UserListPage> {
           children: [
             IconButton(
               icon: Icon(Icons.edit, color: Colors.blue),
-              onPressed: () => _editUser(index),
+              onPressed: () => _editUser(widget.users.indexOf(user)),
             ),
             IconButton(
               icon: Icon(Icons.delete, color: Colors.red),
-              onPressed: () => _deleteUser(index),
+              onPressed: () => _deleteUser(widget.users.indexOf(user)),
             ),
             IconButton(
               icon: Icon(
                 Icons.favorite,
-                color: widget.users[index]['isFavorite'] == true ? Colors.red : Colors.grey,
+                color: user['isFavorite'] == true ? Colors.red : Colors.grey,
               ),
-              onPressed: () => _toggleFavorite(index),
+              onPressed: () => _toggleFavorite(widget.users.indexOf(user)),
             ),
           ],
         ),
@@ -154,13 +184,13 @@ class _UserListPageState extends State<UserListPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildDetailRow("Phone", widget.users[index]['phone'] ?? ""),
-                _buildDetailRow("Address", widget.users[index]['address'] ?? ""),
-                _buildDetailRow("Gender", widget.users[index]['gender'] ?? ""),
-                _buildDetailRow("City", widget.users[index]['city'] ?? ""),
+                _buildDetailRow("Phone", user['phone'] ?? ""),
+                _buildDetailRow("Address", user['address'] ?? ""),
+                _buildDetailRow("Gender", user['gender'] ?? ""),
+                _buildDetailRow("City", user['city'] ?? ""),
                 _buildDetailRow(
                   "Hobbies",
-                  (widget.users[index]['hobbies'] as List<dynamic>).join(", "),
+                  (user['hobbies'] as List<dynamic>).join(", "),
                 ),
               ],
             ),
